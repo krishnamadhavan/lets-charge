@@ -1,0 +1,8 @@
+.git
+**/.DS_Store
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+deploy/data
+.env
+.env.local

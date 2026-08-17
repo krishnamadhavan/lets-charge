@@ -164,18 +164,19 @@ Stack beyond CitrineOS (our layer, apps, billing) is **not pinned** until the we
 ~/Documents/xAI/
   citrineos-core/     # sibling clone (not our git history). Node 24.16.0+ to run their launcher.
   lets-charge/        # this repo. Our layer: Node 22+.
-    apps/api          # Fastify on :3001
-    apps/web          # React+Vite on :5173; proxies /v1 and /c to the API
+    apps/api          # Fastify — Docker on :3001
+    apps/web          # React — built nginx demo on :5173; host Vite optional
     packages/         # hardware, db, citrine-client (placeholders)
-    deploy/           # our Postgres on host :5433 (db letscharge)
+    deploy/           # compose: db :5433, api :3001, demo web :5173
 ```
 
 Pinned CitrineOS images live in [`deploy/citrineos.env`](deploy/citrineos.env). Do not vendor or workspace-import `@citrineos/core`.
 
 ```bash
 pnpm install
-pnpm db:up          # Postgres on localhost:5433
-pnpm dev            # API :3001 and web :5173
+pnpm up             # Postgres :5433 + API :3001
+pnpm up:demo        # + built web on :5173 (nginx, same-origin /v1)
+pnpm dev:web        # host Vite override — stop the web container first
 ```
 
 CitrineOS itself is started from the sibling, not from this compose file. On this laptop their Operator UI / Postgres are remapped (see [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md)).
@@ -187,4 +188,4 @@ Stack for our layer (TypeScript / Fastify / Postgres / Drizzle / React+Vite) is 
 - Scope agreed: apartment / society, two certified AC SKUs, CitrineOS as engine.
 - v1 design contract: [`docs/v1-design.md`](docs/v1-design.md).
 - Week-1 CitrineOS 1.6 loop proven (lab charger): [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md).
-- Workspace scaffold: hello API (`:3001`), web stub (`:5173`), our Postgres (`:5433`). No sessions, no driver API, no operator CMS.
+- Workspace scaffold: API and Postgres in Docker, built web image for demo, host Vite optional. No sessions, no driver API, no operator CMS.

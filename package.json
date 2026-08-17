@@ -9,10 +9,13 @@
     "onlyBuiltDependencies": ["esbuild"]
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter @letscharge/api --filter @letscharge/web run dev",
+    "dev": "pnpm dev:web",
     "dev:api": "pnpm --filter @letscharge/api dev",
     "dev:web": "pnpm --filter @letscharge/web dev",
-    "db:up": "docker compose -f deploy/compose.yml up -d",
-    "db:down": "docker compose -f deploy/compose.yml down"
+    "up": "docker compose -f deploy/compose.yml up -d --build",
+    "up:demo": "docker compose -f deploy/compose.yml --profile demo up -d --build",
+    "down": "docker compose -f deploy/compose.yml --profile demo down",
+    "db:up": "docker compose -f deploy/compose.yml up -d --build",
+    "db:down": "docker compose -f deploy/compose.yml --profile demo down"
   }
 }
