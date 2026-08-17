@@ -172,7 +172,7 @@ Until a **real box** has completed a session against our URL, UI work is decorat
    - Replay EVerest on an **amd64 Linux** host later. Do not keep fighting qemu on this laptop.
    - **PR 1:** scaffold the pnpm workspace (`chore(repo): scaffold pnpm workspace and compose overlay`).
    - Fold week-1 facts into `docs/v1-design.md` (Authorization has **no** Data API on `v2.0.0-beta3`; Hasura/`Authorizations` is the lab path).
-5. If they say “just continue” with no pick, prefer **fold week-1 facts + PR 1**. Do not open Xcode/Android Studio. Do not start operator/resident UI. Do not treat the lab charger session as the real-SKU merge gate.
+5. If they say “just continue” with no pick, prefer **fold week-1 facts**, then **PR 3** (raw OCPP ingest) once the workspace PR is on `main`. Do not open Xcode/Android Studio. Do not start operator/resident UI. Do not treat the lab charger session as the real-SKU merge gate.
 
 ---
 

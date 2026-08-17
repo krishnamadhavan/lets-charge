@@ -1,0 +1,21 @@
+{
+  "name": "lets-charge",
+  "private": true,
+  "packageManager": "pnpm@10.19.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  },
+  "scripts": {
+    "dev": "pnpm dev:web",
+    "dev:api": "pnpm --filter @letscharge/api dev",
+    "dev:web": "pnpm --filter @letscharge/web dev",
+    "up": "docker compose -f deploy/compose.yml up -d --build",
+    "up:demo": "docker compose -f deploy/compose.yml --profile demo up -d --build",
+    "down": "docker compose -f deploy/compose.yml --profile demo down",
+    "db:up": "docker compose -f deploy/compose.yml up -d --build",
+    "db:down": "docker compose -f deploy/compose.yml --profile demo down"
+  }
+}

@@ -1,0 +1,66 @@
+# Our layer. Does not start CitrineOS.
+#
+#   pnpm up          db + API
+#   pnpm up:demo     + built web (nginx) on :5173
+#   pnpm dev:web     host Vite override — stop the web container first
+#
+# Host ports: API 3001, demo web 5173, Postgres 5433.
+# Do not bind 3000, 5432, 8080–8082, 8090, 8443, 8444.
+name: letscharge
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: letscharge-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: letscharge
+      POSTGRES_USER: letscharge
+      POSTGRES_PASSWORD: letscharge
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U letscharge -d letscharge"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  letscharge-api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: letscharge-api
+    ports:
+      - "3001:3001"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3001
+      DATABASE_URL: postgres://letscharge:letscharge@db:5432/letscharge
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  web:
+    profiles: ["demo"]
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    container_name: letscharge-web
+    ports:
+      - "5173:80"
+    depends_on:
+      letscharge-api:
+        condition: service_healthy
