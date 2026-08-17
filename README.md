@@ -4,7 +4,7 @@ Hardware-agnostic charge-point software for **apartment / housing-society** park
 
 v1 is one society, a handful of AC wallboxes, and a working charge from “plug in” to “kWh on a receipt.” It is not a public highway network and not a roaming app for India.
 
-There is no application source in this repo yet. This file is the scope we are building against.
+This file is the product **scope contract**. Implementation of our layer starts as a pnpm workspace; the OCPP engine is CitrineOS in a sibling clone, not this repo.
 
 ## What we are building
 
@@ -158,10 +158,33 @@ Rules:
 
 Stack beyond CitrineOS (our layer, apps, billing) is **not pinned** until the week-1 simulator loop works.
 
+## Repo layout
+
+```text
+~/Documents/xAI/
+  citrineos-core/     # sibling clone (not our git history). Node 24.16.0+ to run their launcher.
+  lets-charge/        # this repo. Our layer: Node 22+.
+    apps/api          # Fastify on :3001
+    apps/web          # React+Vite on :5173; proxies /v1 and /c to the API
+    packages/         # hardware, db, citrine-client (placeholders)
+    deploy/           # our Postgres on host :5433 (db letscharge)
+```
+
+Pinned CitrineOS images live in [`deploy/citrineos.env`](deploy/citrineos.env). Do not vendor or workspace-import `@citrineos/core`.
+
+```bash
+pnpm install
+pnpm db:up          # Postgres on localhost:5433
+pnpm dev            # API :3001 and web :5173
+```
+
+CitrineOS itself is started from the sibling, not from this compose file. On this laptop their Operator UI / Postgres are remapped (see [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md)).
+
+Stack for our layer (TypeScript / Fastify / Postgres / Drizzle / React+Vite) is still **provisional**.
+
 ## Current status
 
 - Scope agreed: apartment / society, two certified AC SKUs, CitrineOS as engine.
-- v1 design contract written: [`docs/v1-design.md`](docs/v1-design.md). Stack for our layer is still **provisional**.
-- Week-1 CitrineOS 1.6 loop proven (lab charger): [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md). EVerest manager does not stay up on this arm64 Mac. Not a real-SKU session.
-- No product CSMS / CMS / app code yet (lab scripts only).
-- Next: scaffold the workspace (PR 1 in the design contract).
+- v1 design contract: [`docs/v1-design.md`](docs/v1-design.md).
+- Week-1 CitrineOS 1.6 loop proven (lab charger): [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md).
+- Workspace scaffold: hello API (`:3001`), web stub (`:5173`), our Postgres (`:5433`). No sessions, no driver API, no operator CMS.

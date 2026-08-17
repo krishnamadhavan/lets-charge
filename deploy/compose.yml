@@ -1,0 +1,22 @@
+# Our layer only. Does not start CitrineOS.
+# Host ports we publish: API 3001 and web 5173 run via pnpm for now.
+# Postgres is the service that must not collide with CitrineOS (:5432) or clean-my-car.
+name: letscharge
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: letscharge-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: letscharge
+      POSTGRES_USER: letscharge
+      POSTGRES_PASSWORD: letscharge
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U letscharge -d letscharge"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

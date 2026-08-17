@@ -1,0 +1,19 @@
+# Optional overlay: attach our services to the CitrineOS compose network
+# so a later API container can be reached as letscharge-api:3001.
+#
+#   docker compose -f deploy/compose.yml -f deploy/compose.citrine.yml up -d
+#
+# Webhook URL from CitrineOS (once the API is on this network):
+#   http://letscharge-api:3001/internal/citrine/ocpp?secret=
+name: letscharge
+
+networks:
+  citrineos:
+    external: true
+    name: citrineos
+
+services:
+  db:
+    networks:
+      - default
+      - citrineos
