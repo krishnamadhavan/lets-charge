@@ -179,7 +179,7 @@ pnpm up:demo        # + built web on :5173 (nginx, same-origin /v1)
 pnpm dev:web        # host Vite override — stop the web container first
 ```
 
-CitrineOS itself is started from the sibling, not from this compose file. On this laptop their Operator UI / Postgres are remapped (see [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md)).
+CitrineOS itself is started from the sibling on its default ports (UI **:3000**, Postgres **:5432**). See [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md).
 
 Stack for our layer (TypeScript / Fastify / Postgres / Drizzle / React+Vite) is still **provisional**.
 
