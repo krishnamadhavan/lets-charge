@@ -27,7 +27,7 @@ Industry default is to split the box from the brain. OCPP is charger ↔ our clo
 
 “OCPP-compliant” is not plug-and-play. Vendors differ on when they send `StatusNotification`, when `StartTransaction` fires, and how meter timestamps look. Real failures are ghost sessions (energy, no bill), chargers reverting to max amps when the net drops, and firmware that slightly changes JSON and billing dies. Mature CSMS keep a **per-vendor hardware profile**. That is why v1 certifies two dialects (Schneider = clean/global, Exicom = India volume) rather than claiming “any OCPP charger.”
 
-This repo is greenfield. The only committed product artifacts are the README scope contract, and `.grok/rules`. There is no application source. This contract exists so week-1 bring-up and subsequent PRs have a single ownership, data-model, and API target.
+This repo is greenfield. The committed product artifacts started as the README scope contract and this handoff. Agent workflow rules live in `~/.grok/rules/`, not in this tree. This contract exists so week-1 bring-up and subsequent PRs have a single ownership, data-model, and API target.
 
 India constraints we keep in mind and do **not** implement in v1: charging is de-licensed (DISCOM / inspector / fire NOC / BIS are site problems); MoP 2024 pushes OCPP and OCPI but field boxes are still mostly 1.6; charging is a service (GST ~18%), not electricity; UPI is table-stakes later. v1 is car AC in a society basement or podium, not Bharat AC-001 scooters and not a public highway network.
 

@@ -152,7 +152,7 @@ Until a **real box** has completed a session against our URL, UI work is decorat
 | `docs/bringup-citrineos.md` | Week-1 facts: CitrineOS 1.6 loop works (lab charger). EVerest manager exits on this arm64 Mac. |
 | `scripts/lab-ocpp16-charger.mjs` | Lab OCPP 1.6 charger (not product) |
 | `scripts/lab-ocpp-sink.mjs` | Lab subscription sink |
-| `.grok/rules/` | Conventional commits, no commits to `main`, delete branch after merge |
+| Agent rules | Home `~/.grok/rules/` (all projects): conventional commits, no commits to `main`, delete branch after merge, clickable links |
 | Application / product code | **None** |
 | Sibling | `~/Documents/xAI/citrineos-core` @ `v2.0.0-beta3` (`61622a0`) |
 
