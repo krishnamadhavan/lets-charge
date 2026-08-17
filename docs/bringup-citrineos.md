@@ -18,25 +18,24 @@ This is **not** a real-SKU session. PR 9 / PR 11 stay gated.
 
 ## How to start (this laptop)
 
-`clean-my-car` already owns host **3000** and **5432**. Do **not** run vanilla `pnpm citrine --everest16` here — it will fail to bind. Use the remaps in [`deploy/citrineos-host-ports.yml`](../deploy/citrineos-host-ports.yml):
+CitrineOS uses its documented host ports. Our layer stays off those ports.
 
-| Service | Documented host | This laptop |
-|---|---|---|
-| Operator UI | 3000 | **3010** |
-| CitrineOS Postgres | 5432 | **5434** (db `citrine`, user/pass `citrine`) |
-| HTTP / Swagger | 8080 | 8080 |
-| WS no-auth (1.6 + 2.x) | 8081 | 8081 |
-| WS basic-auth | 8082 | 8082 |
-| TLS WS | 8443 / 8444 | 8443 / 8444 |
-| Hasura | 8090 | 8090 |
-| Our future API / web / db | 3001 / 5173 / 5433 | unchanged |
+| Service | Host |
+|---|---|
+| Operator UI | 3000 |
+| CitrineOS Postgres | 5432 (db `citrine`, user/pass `citrine`) |
+| HTTP / Swagger | 8080 |
+| WS no-auth (1.6 + 2.x) | 8081 |
+| WS basic-auth | 8082 |
+| TLS WS | 8443 / 8444 |
+| Hasura | 8090 |
+| Our API / demo web / Postgres | 3001 / 5173 / 5433 |
 
 ```bash
 # CitrineOS (published images)
 cd ~/Documents/xAI/citrineos-core
-docker compose -f docker-compose.yml \
-  -f ~/Documents/xAI/lets-charge/deploy/citrineos-host-ports.yml \
-  --profile ui up -d
+pnpm citrine
+# or: docker compose -f docker-compose.yml --profile ui up -d
 
 # Optional: EVerest 1.6 (large image)
 cd ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest
@@ -163,7 +162,7 @@ Syscall pipe2() failed (Invalid argument), exiting
 
 - Swagger: http://localhost:8080/docs
 - Health: `GET /health` → `{"status":"pass"}`
-- Operator UI (this laptop): http://localhost:3010
+- Operator UI: http://localhost:3000
 - Hasura: http://localhost:8090
 - RabbitMQ mgmt: http://localhost:15672 (guest/guest)
 

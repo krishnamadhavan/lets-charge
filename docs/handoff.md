@@ -150,10 +150,9 @@ Until a **real box** has completed a session against our URL, UI work is decorat
 | `docs/handoff.md` | This file |
 | `docs/v1-design.md` | v1 design contract (written 2026-08-16; product defaults locked) |
 | `docs/bringup-citrineos.md` | Week-1 facts: CitrineOS 1.6 loop works (lab charger). EVerest manager exits on this arm64 Mac. |
-| `deploy/citrineos-host-ports.yml` | Remap UI→3010, Postgres→5434 (clean-my-car owns 3000/5432) |
 | `scripts/lab-ocpp16-charger.mjs` | Lab OCPP 1.6 charger (not product) |
 | `scripts/lab-ocpp-sink.mjs` | Lab subscription sink |
-| `.grok/rules/` | Conventional commits, no commits to `main`, delete branch after merge |
+| Agent rules | Home `~/.grok/rules/` (all projects): conventional commits, no commits to `main`, delete branch after merge, clickable links |
 | Application / product code | **None** |
 | Sibling | `~/Documents/xAI/citrineos-core` @ `v2.0.0-beta3` (`61622a0`) |
 
