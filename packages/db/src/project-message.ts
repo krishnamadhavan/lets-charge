@@ -35,7 +35,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function snapFromRow(row: typeof sessions.$inferSelect): SessionSnap {
+export function snapFromRow(row: typeof sessions.$inferSelect): SessionSnap {
   return {
     status: row.status,
     residentId: row.residentId,
@@ -305,7 +305,7 @@ async function findOrCreateSession(
   }
 }
 
-async function persistSession(
+export async function persistSession(
   db: LetsChargeDb,
   previous: typeof sessions.$inferSelect,
   next: SessionSnap,

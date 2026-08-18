@@ -11,6 +11,7 @@
     "@letscharge/citrine-client": "workspace:*",
     "@letscharge/db": "workspace:*",
     "@letscharge/hardware": "workspace:*",
+    "drizzle-orm": "^0.44.5",
     "fastify": "^5.6.1",
     "postgres": "^3.4.7"
   },

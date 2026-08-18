@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import postgres from "postgres";
 import { createDb, failTimedOutPendingStarts, migrate } from "@letscharge/db";
 import { loadEnv } from "./env.js";
+import { registerLabRoutes } from "./lab.js";
 import { seedHardwareProfiles } from "./profiles.js";
 import { subscribeEverestStationInBackground } from "./subscribe.js";
 import { registerOcppWebhook } from "./webhook.js";
@@ -30,11 +31,14 @@ app.get("/health", async () => ({ status: "ok", service: "letscharge-api" }));
 app.get("/v1/health", async () => ({ status: "ok", service: "letscharge-api" }));
 
 registerOcppWebhook(app, { db, webhookSecret: env.webhookSecret });
+if (env.citrine) {
+  registerLabRoutes(app, { db, webhookSecret: env.webhookSecret, citrine: env.citrine });
+}
 
 await app.listen({ port: env.port, host: env.host });
 
 if (env.citrine) {
-  subscribeEverestStationInBackground(env.citrine, env.webhookSecret, app.log);
+  subscribeEverestStationInBackground(env.citrine, env.webhookSecret, app.log, db);
 }
 
 const timeoutTimer = setInterval(() => {
