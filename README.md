@@ -192,4 +192,5 @@ Stack for our layer (TypeScript / Fastify / Postgres / Drizzle / React+Vite) is 
 - Workspace scaffold: API and Postgres in Docker, built web image for demo, host Vite optional.
 - Raw OCPP ingest: `POST /internal/citrine/ocpp?secret=` writes `ocpp_messages`. `pnpm up:citrine` subscribes EVerest `cp001` only.
 - Product schema + lab seed: one society, three slots, EVerest charger `cp001` (`LC-B12`), two residents with ₹1,000 test credit.
-- Schneider hardware profile (plug-in fields still null) and OCPP projector: raw messages → `ocpp_events` + session state machine. No driver/operator UI.
+- Schneider hardware profile (plug-in fields still null) and OCPP projector: raw messages → `ocpp_events` + session state machine.
+- Lab start/stop adapter: `POST /internal/lab/sessions/start` queues CitrineOS RemoteStart (201 = queued). Authorization via Hasura (`ADMIN`, `RFIDTEST01`, resident tags). No driver/operator UI.
