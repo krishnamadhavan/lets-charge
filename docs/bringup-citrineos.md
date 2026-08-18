@@ -146,17 +146,25 @@ CitrineOS stored energy in **kWh** (`1.25`), not Wh. Our projector must not assu
 
 ## EVerest status
 
-`pnpm citrine --everest16` expands to CitrineOS compose + `apps/ocpp-server/everest` compose (`OCPP_VERSION=1.6`, image `ghcr.io/everest/everest-demo/manager:2025.6.1-dt-esdp`). Their compose pins `platform: linux/x86_64`.
-
-On this **arm64** Mac the image pulled and the manager **started as `OCPP16`**, then exited 1 immediately:
+CitrineOS’s everest compose pins `platform: linux/x86_64`. On this **arm64** Mac that path starts as `OCPP16` then exits:
 
 ```text
-everest-framework 0.22.1 @v0.22.1
-Using MQTT broker mqtt-server:1883
 Syscall pipe2() failed (Invalid argument), exiting
 ```
 
-`mqtt-server` and `nodered` stay up (`:1880`). The manager does not, so there is no EVerest Boot on `:8081`. This is qemu/x86_64-emulation vs everest-framework, not a CitrineOS bug. Replay on an amd64 Linux host (or a Docker setup with working amd64 Rosetta) before treating `--everest16` as green. Until then the lab charger is the week-1 stand-in. Do not block product work on this.
+That is qemu, not CitrineOS. The official `manager` / `mqtt-server` images publish **linux/arm64**. Use the overlay [`deploy/everest-native-platform.yml`](../deploy/everest-native-platform.yml):
+
+```bash
+cd ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest
+OCPP_VERSION=1.6 EVEREST_IMAGE_TAG=2025.6.1-dt-esdp \
+  docker compose -f docker-compose.yml \
+  -f ~/Documents/xAI/lets-charge/deploy/everest-native-platform.yml \
+  up -d --build
+```
+
+Do **not** run vanilla `pnpm citrine --everest16` on this laptop (it re-applies `linux/x86_64`). Need several GB free on the host; a full disk makes Docker hang mid-extract.
+
+**Verified 2026-08-18:** arm64 manager stays up (`All modules are initialized`). It connects to `ws://host.docker.internal:8081/cp001` with `ocpp1.6`. CitrineOS accepts `StatusNotification` and pings on `cp001`. UI: [EVerest](http://localhost:1880/ui/). OCPP logs: [localhost:8888](http://localhost:8888/). `SecurityEventNotification` CALLERROR from CitrineOS is noise (1.6 does not implement that action).
 
 ## Health URLs
 
@@ -170,5 +178,5 @@ Syscall pipe2() failed (Invalid argument), exiting
 
 - Buy-rule #1 on Schneider / Exicom (still planning default).
 - Real-SKU billable-shape session (UI merge gate).
-- EVerest actually registering (image not local yet).
+- Official `pnpm citrine --everest16` on this Mac (use the arm64 overlay instead).
 - HTTP auth on `:8080` if they later turn the bearer scheme on.
