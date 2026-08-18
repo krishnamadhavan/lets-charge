@@ -245,3 +245,18 @@ export const ocppMessages = pgTable(
       .where(sql`${table.correlationId} is not null`),
   ],
 );
+
+export const ocppEvents = pgTable("ocpp_events", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  messageId: bigint("message_id", { mode: "number" })
+    .notNull()
+    .unique()
+    .references(() => ocppMessages.id),
+  chargerId: uuid("charger_id").references(() => chargers.id),
+  hardwareProfileId: text("hardware_profile_id").references(() => hardwareProfiles.id),
+  action: text("action").notNull(),
+  connectorOcppId: integer("connector_ocpp_id"),
+  ocppTransactionId: text("ocpp_transaction_id"),
+  occurredAt: timestamp("occurred_at", { withTimezone: true }),
+  fields: jsonb("fields").notNull(),
+});
