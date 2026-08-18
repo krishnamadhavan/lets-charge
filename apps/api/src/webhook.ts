@@ -1,6 +1,11 @@
 import { timingSafeEqual } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { appendOcppMessage, isJsonObject, type LetsChargeDb } from "@letscharge/db";
+import {
+  appendOcppMessage,
+  isJsonObject,
+  projectOcppMessage,
+  type LetsChargeDb,
+} from "@letscharge/db";
 
 function secretsEqual(provided: string, expected: string): boolean {
   const a = Buffer.from(provided);
@@ -29,6 +34,13 @@ export function registerOcppWebhook(
 
       try {
         const result = await appendOcppMessage(opts.db, request.body);
+        if (result.id !== null) {
+          setImmediate(() => {
+            void projectOcppMessage(opts.db, result.id as number).catch((error: unknown) => {
+              request.log.error({ err: error, messageId: result.id }, "ocpp project failed");
+            });
+          });
+        }
         return reply.code(200).send({ ok: true, duplicate: result.duplicate });
       } catch (error) {
         request.log.error({ err: error }, "ocpp ingest persist failed");

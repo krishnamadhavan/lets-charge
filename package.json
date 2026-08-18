@@ -16,7 +16,7 @@
     "up:citrine": "docker compose -f deploy/compose.yml -f deploy/compose.citrine.yml up -d --build",
     "up:demo": "docker compose -f deploy/compose.yml --profile demo up -d --build",
     "down": "docker compose -f deploy/compose.yml --profile demo down",
-    "test": "pnpm --filter @letscharge/db test",
+    "test": "pnpm --recursive --if-present test",
     "db:up": "docker compose -f deploy/compose.yml up -d --build",
     "db:down": "docker compose -f deploy/compose.yml --profile demo down"
   }

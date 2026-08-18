@@ -6,6 +6,33 @@ export {
   mapSubscriptionCallback,
   type AppendResult,
 } from "./ocpp-messages.js";
+export {
+  failTimedOutPendingStarts,
+  projectOcppMessage,
+  upsertHardwareProfileRows,
+} from "./project-message.js";
 export { generateOcppIdTag } from "./ocpp-id-tag.js";
+export {
+  amountPaise,
+  closedEnergyWh,
+  isBillable,
+  liveEnergyWh,
+  meterValueToWh,
+} from "./energy.js";
+export {
+  extractEnergyWh,
+  normalizedFields,
+  occurredAt,
+  parseOcppMessage,
+  sessionEventFromFrame,
+} from "./ocpp-frame.js";
+export {
+  applySessionEvent,
+  newSessionSnap,
+  openSessionStatuses,
+  type SessionEvent,
+  type SessionSnap,
+  type SessionStatus,
+} from "./session-machine.js";
 export * from "./schema.js";
 export type { MappedOcppMessage, OcppDirection } from "./map-callback.js";

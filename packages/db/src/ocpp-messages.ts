@@ -1,3 +1,4 @@
+import { and, eq } from "drizzle-orm";
 import type { LetsChargeDb } from "./client.js";
 import { isJsonObject, mapSubscriptionCallback } from "./map-callback.js";
 import { ocppMessages } from "./schema.js";
@@ -42,7 +43,22 @@ export async function appendOcppMessage(
     return { id: inserted.id, duplicate: false };
   } catch (error) {
     if (isUniqueViolation(error)) {
-      return { id: null, duplicate: true };
+      if (!row.correlationId) {
+        return { id: null, duplicate: true };
+      }
+      const [existing] = await db
+        .select({ id: ocppMessages.id })
+        .from(ocppMessages)
+        .where(
+          and(
+            eq(ocppMessages.ocppStationId, row.ocppStationId),
+            eq(ocppMessages.correlationId, row.correlationId),
+            eq(ocppMessages.action, row.action),
+            eq(ocppMessages.direction, row.direction),
+          ),
+        )
+        .limit(1);
+      return { id: existing?.id ?? null, duplicate: true };
     }
     throw error;
   }

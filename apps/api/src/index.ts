@@ -1,7 +1,8 @@
 import Fastify from "fastify";
 import postgres from "postgres";
-import { createDb, migrate } from "@letscharge/db";
+import { createDb, failTimedOutPendingStarts, migrate } from "@letscharge/db";
 import { loadEnv } from "./env.js";
+import { seedHardwareProfiles } from "./profiles.js";
 import { subscribeEverestStationInBackground } from "./subscribe.js";
 import { registerOcppWebhook } from "./webhook.js";
 
@@ -10,6 +11,7 @@ const sql = postgres(env.databaseUrl, { onnotice() {} });
 const db = createDb(sql);
 
 await migrate(sql);
+await seedHardwareProfiles(db);
 
 const app = Fastify({
   logger: {
@@ -34,3 +36,10 @@ await app.listen({ port: env.port, host: env.host });
 if (env.citrine) {
   subscribeEverestStationInBackground(env.citrine, env.webhookSecret, app.log);
 }
+
+const timeoutTimer = setInterval(() => {
+  void failTimedOutPendingStarts(db).catch((error: unknown) => {
+    app.log.error({ err: error }, "pending_start timeout sweep failed");
+  });
+}, 15_000);
+timeoutTimer.unref();
