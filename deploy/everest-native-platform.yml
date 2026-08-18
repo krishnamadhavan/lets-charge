@@ -1,0 +1,14 @@
+# Override CitrineOS's everest compose, which pins linux/x86_64.
+# That qemu path dies on Apple Silicon: "Syscall pipe2() failed".
+# Official manager/mqtt images publish linux/arm64 — use those on this Mac.
+#
+#   cd ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest
+#   OCPP_VERSION=1.6 EVEREST_IMAGE_TAG=2025.6.1-dt-esdp \
+#     docker compose -f docker-compose.yml \
+#     -f ~/Documents/xAI/lets-charge/deploy/everest-native-platform.yml \
+#     up -d --build
+services:
+  mqtt-server:
+    platform: linux/arm64
+  manager:
+    platform: linux/arm64
