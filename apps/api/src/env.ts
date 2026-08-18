@@ -8,6 +8,10 @@ export type ApiEnv = {
         baseUrl: string;
         tenantId: number;
         subscriptionPath: string;
+        remoteStartPath: string;
+        remoteStopPath: string;
+        bootPath: string;
+        hasuraUrl: string | undefined;
         stationId: string;
         webhookUrl: string;
       }
@@ -37,6 +41,12 @@ export function loadEnv(env: NodeJS.ProcessEnv = process.env): ApiEnv {
           baseUrl: citrineBaseUrl,
           tenantId: Number(env.CITRINE_TENANT_ID ?? 1),
           subscriptionPath: env.CITRINE_SUBSCRIPTION_PATH ?? "/data/ocpprouter/subscription",
+          remoteStartPath:
+            env.CITRINE_REMOTE_START_PATH ?? "/ocpp/1.6/evdriver/remoteStartTransaction",
+          remoteStopPath:
+            env.CITRINE_REMOTE_STOP_PATH ?? "/ocpp/1.6/evdriver/remoteStopTransaction",
+          bootPath: env.CITRINE_STATION_COMMISSION_PATH ?? "/data/configuration/boot",
+          hasuraUrl: env.CITRINE_HASURA_URL?.trim() || undefined,
           stationId: env.CITRINE_OCPP_STATION_ID ?? "cp001",
           webhookUrl:
             env.CITRINE_WEBHOOK_URL ?? "http://letscharge-api:3001/internal/citrine/ocpp",

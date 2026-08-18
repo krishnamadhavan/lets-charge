@@ -18,6 +18,7 @@ services:
   letscharge-api:
     environment:
       CITRINE_BASE_URL: http://citrine:8080
+      CITRINE_HASURA_URL: http://graphql-engine:8080/v1/graphql
     networks:
       - default
       - citrineos
