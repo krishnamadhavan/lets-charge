@@ -1,2 +1,2 @@
-/** SKU YAML profiles land in the Schneider / Exicom PRs. */
-export const packageName = "@letscharge/hardware";
+export { loadHardwareProfiles, profileForVendorModel } from "./load.js";
+export { defaultMeters, isHardwareProfile, type EnergyUnit, type HardwareProfile } from "./profile.js";
