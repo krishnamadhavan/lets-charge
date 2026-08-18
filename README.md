@@ -166,7 +166,7 @@ Stack beyond CitrineOS (our layer, apps, billing) is **not pinned** until the we
   lets-charge/        # this repo. Our layer: Node 22+.
     apps/api          # Fastify — Docker on :3001
     apps/web          # React — built nginx demo on :5173; host Vite optional
-    packages/         # hardware, db, citrine-client (placeholders)
+    packages/         # hardware, db (ocpp_messages), citrine-client
     deploy/           # compose: db :5433, api :3001, demo web :5173
 ```
 
@@ -175,6 +175,7 @@ Pinned CitrineOS images live in [`deploy/citrineos.env`](deploy/citrineos.env). 
 ```bash
 pnpm install
 pnpm up             # Postgres :5433 + API :3001
+pnpm up:citrine     # same, plus join the `citrineos` network and subscribe cp001
 pnpm up:demo        # + built web on :5173 (nginx, same-origin /v1)
 pnpm dev:web        # host Vite override — stop the web container first
 ```
@@ -188,4 +189,5 @@ Stack for our layer (TypeScript / Fastify / Postgres / Drizzle / React+Vite) is 
 - Scope agreed: apartment / society, two certified AC SKUs, CitrineOS as engine.
 - v1 design contract: [`docs/v1-design.md`](docs/v1-design.md).
 - Week-1 CitrineOS 1.6 loop proven on **EVerest** (`cp001`, tx 2): [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md).
-- Workspace scaffold: API and Postgres in Docker, built web image for demo, host Vite optional. No sessions, no driver API, no operator CMS.
+- Workspace scaffold: API and Postgres in Docker, built web image for demo, host Vite optional.
+- Raw OCPP ingest: `POST /internal/citrine/ocpp?secret=` writes `ocpp_messages`. `pnpm up:citrine` subscribes EVerest `cp001` only. No normalization, no sessions, no driver/operator UI.
