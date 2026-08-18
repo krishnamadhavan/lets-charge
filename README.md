@@ -187,5 +187,5 @@ Stack for our layer (TypeScript / Fastify / Postgres / Drizzle / React+Vite) is 
 
 - Scope agreed: apartment / society, two certified AC SKUs, CitrineOS as engine.
 - v1 design contract: [`docs/v1-design.md`](docs/v1-design.md).
-- Week-1 CitrineOS 1.6 loop proven (lab charger): [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md).
+- Week-1 CitrineOS 1.6 loop proven on **EVerest** (`cp001`, tx 2): [`docs/bringup-citrineos.md`](docs/bringup-citrineos.md).
 - Workspace scaffold: API and Postgres in Docker, built web image for demo, host Vite optional. No sessions, no driver API, no operator CMS.

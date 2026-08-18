@@ -1,119 +1,148 @@
-# Week-1 bring-up — CitrineOS + OCPP 1.6
+# Week-1 bring-up — CitrineOS + EVerest 1.6
 
-Date: 2026-08-16. Sibling clone: `~/Documents/xAI/citrineos-core` @ `61622a0` (`v2.0.0-beta3`). Published images: `ghcr.io/citrineos/citrineos-server:latest` + operator-ui.
-
-This file records **facts** from a live lab. It does not change product locks in [`v1-design.md`](v1-design.md).
+Date: 2026-08-18. Sibling: `~/Documents/xAI/citrineos-core` @ `61622a0` (`v2.0.0-beta3`).  
+This file is **facts** from a live lab. It does not change product locks in [`v1-design.md`](v1-design.md).
 
 ## Verdict
 
-**CitrineOS 1.6 loop works** on this machine:
+**EVerest 1.6 against CitrineOS works** on this machine:
 
 `Boot → Heartbeat → RemoteStart → StartTransaction → MeterValues → RemoteStop → StopTransaction`
 
-Persisted CitrineOS `Transactions` row `id=1`: `ocppConnectionName=cp001`, `transactionId="1"`, `meterStart=1.25` kWh, `totalKwh=1.25`, `isActive=false`, `startTime`/`endTime` both set.
-
-The charger was our lab OCPP 1.6 client (`scripts/lab-ocpp16-charger.mjs`), **not** EVerest. The official EVerest manager image is now local on this machine but **does not stay up on Apple Silicon** (see below). The CSMS path is already proven.
+CitrineOS `Transactions` row `id=2`: `ocppConnectionName=cp001`, `transactionId="2"`, `meterStart=0`, `totalKwh=0.066`, `isActive=false`, start and end both set.
 
 This is **not** a real-SKU session. PR 9 / PR 11 stay gated.
 
-## How to start (this laptop)
+A lab JS charger (`scripts/lab-ocpp16-charger.mjs`) proved the same CSMS path earlier (tx `1`). EVerest is now the week-1 stand-in.
 
-CitrineOS uses its documented host ports. Our layer stays off those ports.
+## How to start (this laptop)
 
 | Service | Host |
 |---|---|
-| Operator UI | 3000 |
-| CitrineOS Postgres | 5432 (db `citrine`, user/pass `citrine`) |
-| HTTP / Swagger | 8080 |
-| WS no-auth (1.6 + 2.x) | 8081 |
+| [CitrineOS Operator UI](http://localhost:3000/) | 3000 |
+| CitrineOS Postgres | 5432 (db `citrine` / `citrine` / `citrine`) |
+| [Swagger](http://localhost:8080/docs) | 8080 |
+| OCPP WS (no auth, 1.6 + 2.x) | 8081 |
 | WS basic-auth | 8082 |
 | TLS WS | 8443 / 8444 |
-| Hasura | 8090 |
+| [Hasura](http://localhost:8090/) | 8090 |
 | Our API / demo web / Postgres | 3001 / 5173 / 5433 |
+| [EVerest UI](http://localhost:1880/ui/) | 1880 |
+| [EVerest OCPP logs](http://localhost:8888/) | 8888 |
 
 ```bash
-# CitrineOS (published images)
-cd ~/Documents/xAI/citrineos-core
-pnpm citrine
-# or: docker compose -f docker-compose.yml --profile ui up -d
+# CitrineOS (published images, default ports)
+docker compose -f ~/Documents/xAI/citrineos-core/docker-compose.yml --profile ui up -d
 
-# Optional: EVerest 1.6 (large image)
-cd ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest
-OCPP_VERSION=1.6 EVEREST_IMAGE_TAG=2025.6.1-dt-esdp docker compose up -d --build
-
-# Lab charger (this repo) — enough to prove the loop
-node ~/Documents/xAI/lets-charge/scripts/lab-ocpp-sink.mjs          # :3456
-node ~/Documents/xAI/lets-charge/scripts/lab-ocpp16-charger.mjs     # ws://127.0.0.1:8081/cp001
+# EVerest 1.6 — arm64 overlay required on this Mac
+# --project-directory must be their everest folder (Dockerfile + start.sh live there).
+# Both -f files are required: the overlay is not a full compose file.
+export OCPP_VERSION=1.6 EVEREST_IMAGE_TAG=2025.6.1-dt-esdp
+docker compose \
+  --project-directory ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest \
+  -f ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest/docker-compose.yml \
+  -f ~/Documents/xAI/lets-charge/deploy/everest-native-platform.yml \
+  up -d --build
 ```
 
-Sibling clone needs **Node 24.16.0+** only if you run `pnpm citrine` / their source. The image path needs Docker only. This machine has Node `v24.18.0` and Docker `29.5.2`. `pnpm` was enabled via corepack (`11.22.0`); their `packageManager` field is `pnpm@10.19.0`.
+Do **not** run vanilla `pnpm citrine --everest16` here. Their compose pins `linux/x86_64`; qemu dies with `Syscall pipe2() failed`. Official manager/mqtt images publish **linux/arm64** — the overlay uses those.
 
-Stop CitrineOS with the same compose files: `docker compose … down`. Leave `clean-my-car` running.
+Sibling source needs **Node 24.16.0+** only if you run their launcher from git. Image path needs Docker only.
 
-## OpenAPI facts (`GET http://localhost:8080/docs/json`)
+## Week-1 answers (design open questions 5–9, 13)
 
-Title: **CitrineOS Central System API 2.0.0-beta3**. 127 paths. Top-level `security: null`. A bearer `authorization` scheme exists in components but **docker default Message/Data APIs accepted unauthenticated curl**.
+| # | Fact |
+|---|---|
+| **5** | RemoteStart `POST /ocpp/1.6/evdriver/remoteStartTransaction`. RemoteStop `POST /ocpp/1.6/evdriver/remoteStopTransaction`. Subscribe `POST /data/ocpprouter/subscription`. Commission/boot `PUT /data/configuration/boot`. Password `POST /data/configuration/password`. **No Authorization Data API** on `2.0.0-beta3` (see below). |
+| **6** | Callback matches public `webhook.dispatcher.ts`: `{ ocppConnectionName, event: "connected"\|"closed"\|"message", origin, message, info }`. Confirmed on lab sink and on EVerest traffic (CitrineOS still POSTs the old `:3456` subscription if it exists). |
+| **7** | One URL **per station**. Create-subscription field is **`ocppConnectionName`**, not `stationId`. Always `?tenantId=1` on the querystring. |
+| **8** | OCPP 1.6 WS is `ws://127.0.0.1:8081/<ocppConnectionName>` subprotocol **`ocpp1.6`**. No port 8092. Also 8082 / 8443 / 8444. |
+| **9** | Docker default Message/Data APIs accept **unauthenticated** curl. OpenAPI has a bearer scheme; top-level `security` is `null`. `tenantId` is required; lab default **1**. |
+| **13** | EVerest station id is **`cp001`**. Hard-coded in their `start.sh` as `ws://host.docker.internal:8081/cp001`. Do not assume `CS01`. |
 
-### Commands (Message API)
+Also recorded (not in that OQ list): Hasura backfill table is **`OCPPMessages`**. CitrineOS `Transactions.transactionId` is text (`"2"`); RemoteStop body `transactionId` is an **integer**. Energy in their row is **kWh**; EVerest meters are **Wh** (and often decimal strings like `"38.00"`).
 
-| Action | Method + path | Query | Body |
-|---|---|---|---|
-| RemoteStart 1.6 | `POST /ocpp/1.6/evdriver/remoteStartTransaction` | `identifier` (station), `tenantId` (required, default 1), optional `callbackUrl` | `{ connectorId, idTag }` (`idTag` max 20) |
-| RemoteStop 1.6 | `POST /ocpp/1.6/evdriver/remoteStopTransaction` | same | `{ transactionId }` **integer** |
-| HTTP 200 | | | `[{ "success": true }]` = queued (`IMessageConfirmation[]`). Not charger Accept. |
+## OpenAPI (`GET http://localhost:8080/docs/json`)
 
-No Authorization HTTP header was sent. Lab `tenantId=1` on the **querystring**.
+Title: **CitrineOS Central System API 2.0.0-beta3**. 127 paths.
 
-### Data API (verified)
+### Message API
+
+| Action | Path | Query | Body | HTTP 200 |
+|---|---|---|---|---|
+| RemoteStart 1.6 | `POST /ocpp/1.6/evdriver/remoteStartTransaction` | `identifier` (station), `tenantId` (required), optional `callbackUrl` | `{ connectorId, idTag }` (`idTag` ≤ 20) | `[{ "success": true }]` = **queued**, not charger Accept |
+| RemoteStop 1.6 | `POST /ocpp/1.6/evdriver/remoteStopTransaction` | same | `{ transactionId }` **integer** | same |
+| SendLocalList 1.6 | `POST /ocpp/1.6/evdriver/sendLocalList` | same | OCPP SendLocalList | same |
+
+### Data API
 
 | Action | Path | Notes |
 |---|---|---|
-| Subscribe | `POST /data/ocpprouter/subscription?tenantId=1` | Body: `{ ocppConnectionName, url, onConnect, onClose, onMessage, sentMessage }`. Field is **`ocppConnectionName`**, not `stationId`. Response was the new id (`1`). |
-| List | `GET /data/ocpprouter/subscription?tenantId=1&ocppConnectionName=cp001` | |
+| Subscribe | `POST /data/ocpprouter/subscription?tenantId=1` | Body `{ ocppConnectionName, url, onConnect, onClose, onMessage, sentMessage }` |
+| List / delete | `GET` / `DELETE` same path | GET needs `ocppConnectionName` |
 | Boot config | `PUT/GET/DELETE /data/configuration/boot?ocppConnectionName=&tenantId=1` | |
+| Password | `POST /data/configuration/password` | |
 | Transaction | `GET /data/transactions/transaction?ocppConnectionName=&transactionId=&tenantId=1` | |
 
-### Authorization Data API — **does not exist on this tag**
+### Authorization Data API — **does not exist**
 
-Generated OpenAPI has **no** `/data/.../authorization` upsert. EVDriver Data API is only `GET /data/evdriver/localListVersion`.
+No `/data/.../authorization`. EVDriver Data API is only `GET /data/evdriver/localListVersion`.
 
-Lab path that unblocked `StartTransaction`: SQL insert into CitrineOS `Authorizations` (tenant 1). That is **not** the product adapter (we do not write their tables from app code). Next adapter options, in order:
+Lab path that unblocks `StartTransaction`: SQL (or Hasura) insert into `Authorizations` (`idToken`, `status=Accepted`, `tenantId=1`). **Not** the product adapter. Product options: server-side Hasura insert; or `SendLocalList` if the box uses a local list.
 
-1. Hasura GraphQL insert into `Authorizations` from **our** API process (not the browser). Table is tracked (`public_Authorizations.yaml`). Console on `:8090` has no `HASURA_GRAPHQL_ADMIN_SECRET` in current compose.
-2. OCPP 1.6 `POST /ocpp/1.6/evdriver/sendLocalList` if the box consults a local list.
-3. Fold a real Data API into the contract only if a later CitrineOS release adds one.
+Without a row: `StartTransaction.conf` = `{ idTagInfo: { status: "Invalid" }, transactionId: 0 }`. With `ADMIN` / `RFIDTEST01` Accepted, EVerest got `{ idTagInfo: { status: "Accepted" }, transactionId: 2 }`.
 
-Without a row, `StartTransaction.conf` is `{ idTagInfo: { status: "Invalid" }, transactionId: 0 }`. After insert of `ADMIN` / `RFIDTEST01` with `status=Accepted`, the next start was `{ idTagInfo: { status: "Accepted" }, transactionId: 1 }`.
+## Identity / wire
 
-## WebSocket
+- EVerest `ocppConnectionName` = **`cp001`**
+- Boot: `chargePointVendor=Pionix`, `chargePointModel=Yeti`, `firmwareVersion=0.1`, `chargeBoxSerialNumber=cp001`
+- Protocol: `ocpp1.6`
+- `allowUnknownChargingStations` on `:8081` auto-commissioned `ChargingStations.id=2`
 
-- Listen: `ws://0.0.0.0:8081/`, `8082`, `wss://8443`, `wss://8444`. **No port 8092.**
-- Lab URL: `ws://127.0.0.1:8081/cp001` with subprotocol **`ocpp1.6`**.
-- EVerest `start.sh` hard-codes the same: `ws://host.docker.internal:8081/cp001`.
-- `allowUnknownChargingStations` is on for 8081. First connect auto-commissioned a `ChargingStations` row (`stationId` PK `2`, `ocppConnectionName=cp001`).
+## EVerest captured sequence (2026-08-18)
 
-## Subscription callback (live)
+Plug is **not** automatic. After RemoteStart the connector sits `Preparing` / Authorized until a carsim plugin:
 
-Matches public `webhook.dispatcher.ts`. CitrineOS in Docker reached the host via `http://host.docker.internal:3456/ocpp`.
+```bash
+docker exec everest-mqtt-server-1 mosquitto_pub -h localhost \
+  -t 'everest_external/nodered/1/carsim/cmd/execute_charging_session' \
+  -m 'sleep 1;iec_wait_pwr_ready;sleep 1;draw_power_regulated 16,3;sleep 36000'
+```
 
-Connect:
+(Or the [EVerest UI](http://localhost:1880/ui/) “Car Plugin” button.)
+
+| Step | What happened |
+|---|---|
+| Boot | `Accepted`, `interval: 60` |
+| Heartbeat | `currentTime` |
+| RemoteStart `ADMIN` connector 1 | HTTP `[{success:true}]`; charger CALLRESULT `{status: Accepted}` |
+| Status | `Preparing` (`info: Authorized`) |
+| After carsim plugin | `StartTransaction` `{connectorId:1,idTag:ADMIN,meterStart:0}` → `{idTagInfo.Accepted, transactionId:2}` |
+| Status | `SuspendedEVSE` then `Charging` |
+| MeterValues | `Energy.Active.Import.Register` at Outlet, unit **Wh**, value `"38.00"` (+ L1/L2/L3). Includes `transactionId: 2` |
+| RemoteStop `{transactionId:2}` | HTTP queued; charger `{status: Accepted}` |
+| StopTransaction | `meterStop: 66`, `reason: Remote`, `transactionId: 2`. CALLRESULT was `{}` (no `idTagInfo`) |
+| Status | `Finishing` |
+| CitrineOS row | `totalKwh=0.066` (they store **kWh**), `isActive=false` |
+
+EVerest also sends `DataTransfer` CSRs for V2G; CitrineOS 1.6 **Rejected** them. `SecurityEventNotification` gets `CALLERROR` / `InternalError`. Ignore both for v1.
+
+## Subscription callback (lab sink, same dispatcher)
 
 ```json
 { "ocppConnectionName": "cp001", "event": "connected" }
 ```
-
-Message:
 
 ```json
 {
   "ocppConnectionName": "cp001",
   "event": "message",
   "origin": "cs",
-  "message": "[2,\"13\",\"StopTransaction\",{...}]",
+  "message": "[2,\"…\",\"StopTransaction\",{…}]",
   "info": {
-    "correlationId": "13",
+    "correlationId": "…",
     "origin": "cs",
-    "timestamp": "2026-08-16T08:33:06.691Z",
+    "timestamp": "…",
     "protocol": "ocpp1.6",
     "action": "StopTransaction",
     "type": "2"
@@ -121,62 +150,16 @@ Message:
 }
 ```
 
-`sentMessage` also fires CSMS-origin frames (RemoteStart/Stop CALL and CALLRESULT). Some CALLRESULT rows show `action: "NoAction"` in `info` (correlation still works). Delivery was at-most-once; sink returned 200.
+`sentMessage` also fires CSMS-origin frames. Some CALLRESULT `info.action` is `"NoAction"`; correlate by id. Delivery is at-most-once.
 
-## Raw store (CitrineOS)
+## Raw store
 
-Table **`OCPPMessages`** (Hasura backfill name). Columns include `ocppConnectionName`, `correlationId`, `origin` (`cs` / `csms`), `protocol` (`ocpp1.6`), `action`, `type` (2/3/4), `payload` jsonb, `raw` text, `tenantId`. 34 rows for the lab session.
-
-## Captured sequence (redacted)
-
-Station `cp001`. Vendor `lets-charge-lab` / model `sim-ocpp16` / serial `LAB-CP001` / firmware `lab-0.1`. idTag `ADMIN`.
-
-1. BootNotification → `Accepted`, `interval: 60`
-2. Heartbeat → `currentTime`
-3. RemoteStart (`ADMIN`, connector 1) → HTTP `[{success:true}]` then charger CALL `Accepted`
-4. StartTransaction (before auth row) → `Invalid` / `transactionId: 0` — **do not bill**
-5. SQL seed `Authorizations` for `ADMIN`, `RFIDTEST01`
-6. RemoteStart again → StartTransaction `Accepted` / `transactionId: 1`
-7. MeterValues `Energy.Active.Import.Register` = `2500` Wh
-8. RemoteStop `{transactionId:1}` → Accepted
-9. StopTransaction `meterStop: 2500` → `idTagInfo.Accepted`
-10. StatusNotification `Available`
-
-CitrineOS stored energy in **kWh** (`1.25`), not Wh. Our projector must not assume their units equal ours.
-
-## EVerest status
-
-CitrineOS’s everest compose pins `platform: linux/x86_64`. On this **arm64** Mac that path starts as `OCPP16` then exits:
-
-```text
-Syscall pipe2() failed (Invalid argument), exiting
-```
-
-That is qemu, not CitrineOS. The official `manager` / `mqtt-server` images publish **linux/arm64**. Use the overlay [`deploy/everest-native-platform.yml`](../deploy/everest-native-platform.yml):
-
-```bash
-cd ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest
-OCPP_VERSION=1.6 EVEREST_IMAGE_TAG=2025.6.1-dt-esdp \
-  docker compose -f docker-compose.yml \
-  -f ~/Documents/xAI/lets-charge/deploy/everest-native-platform.yml \
-  up -d --build
-```
-
-Do **not** run vanilla `pnpm citrine --everest16` on this laptop (it re-applies `linux/x86_64`). Need several GB free on the host; a full disk makes Docker hang mid-extract.
-
-**Verified 2026-08-18:** arm64 manager stays up (`All modules are initialized`). It connects to `ws://host.docker.internal:8081/cp001` with `ocpp1.6`. CitrineOS accepts `StatusNotification` and pings on `cp001`. UI: [EVerest](http://localhost:1880/ui/). OCPP logs: [localhost:8888](http://localhost:8888/). `SecurityEventNotification` CALLERROR from CitrineOS is noise (1.6 does not implement that action).
-
-## Health URLs
-
-- Swagger: http://localhost:8080/docs
-- Health: `GET /health` → `{"status":"pass"}`
-- Operator UI: http://localhost:3000
-- Hasura: http://localhost:8090
-- RabbitMQ mgmt: http://localhost:15672 (guest/guest)
+Table **`OCPPMessages`**. Columns: `ocppConnectionName`, `correlationId`, `origin` (`cs` / `csms`), `protocol`, `action`, `type` (2/3/4), `payload` jsonb, `raw` text, `tenantId`.
 
 ## What this does *not* close
 
-- Buy-rule #1 on Schneider / Exicom (still planning default).
+- Buy-rule #1 on Schneider / Exicom.
 - Real-SKU billable-shape session (UI merge gate).
-- Official `pnpm citrine --everest16` on this Mac (use the arm64 overlay instead).
-- HTTP auth on `:8080` if they later turn the bearer scheme on.
+- Official `pnpm citrine --everest16` on this Mac (use the arm64 overlay).
+- HTTP auth on `:8080` if they later enable the bearer scheme.
+- Product Authorization adapter (Hasura / SendLocalList) — still SQL in the lab.
