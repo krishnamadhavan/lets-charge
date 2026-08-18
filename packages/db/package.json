@@ -6,7 +6,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate": "tsx src/run-migrate.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.5",
@@ -14,6 +15,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }
