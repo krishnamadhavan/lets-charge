@@ -6,5 +6,6 @@ export {
   mapSubscriptionCallback,
   type AppendResult,
 } from "./ocpp-messages.js";
+export { generateOcppIdTag } from "./ocpp-id-tag.js";
 export * from "./schema.js";
 export type { MappedOcppMessage, OcppDirection } from "./map-callback.js";
