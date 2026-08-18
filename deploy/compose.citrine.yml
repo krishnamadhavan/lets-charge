@@ -1,9 +1,12 @@
-# Optional overlay: put the API on the CitrineOS compose network.
+# Optional overlay: put the API on the CitrineOS compose network
+# and subscribe EVerest station cp001.
 #
+#   pnpm up:citrine
 #   docker compose -f deploy/compose.yml -f deploy/compose.citrine.yml up -d --build
 #
 # Webhook URL from CitrineOS:
 #   http://letscharge-api:3001/internal/citrine/ocpp?secret=
+# Requires the sibling CitrineOS compose network named `citrineos`.
 name: letscharge
 
 networks:
@@ -13,6 +16,8 @@ networks:
 
 services:
   letscharge-api:
+    environment:
+      CITRINE_BASE_URL: http://citrine:8080
     networks:
       - default
       - citrineos
