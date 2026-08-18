@@ -32,13 +32,15 @@ A lab JS charger (`scripts/lab-ocpp16-charger.mjs`) proved the same CSMS path ea
 
 ```bash
 # CitrineOS (published images, default ports)
-cd ~/Documents/xAI/citrineos-core
-docker compose -f docker-compose.yml --profile ui up -d
+docker compose -f ~/Documents/xAI/citrineos-core/docker-compose.yml --profile ui up -d
 
 # EVerest 1.6 — arm64 overlay required on this Mac
-cd ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest
-OCPP_VERSION=1.6 EVEREST_IMAGE_TAG=2025.6.1-dt-esdp \
-  docker compose -f docker-compose.yml \
+# --project-directory must be their everest folder (Dockerfile + start.sh live there).
+# Both -f files are required: the overlay is not a full compose file.
+export OCPP_VERSION=1.6 EVEREST_IMAGE_TAG=2025.6.1-dt-esdp
+docker compose \
+  --project-directory ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest \
+  -f ~/Documents/xAI/citrineos-core/apps/ocpp-server/everest/docker-compose.yml \
   -f ~/Documents/xAI/lets-charge/deploy/everest-native-platform.yml \
   up -d --build
 ```
