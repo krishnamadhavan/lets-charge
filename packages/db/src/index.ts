@@ -6,5 +6,5 @@ export {
   mapSubscriptionCallback,
   type AppendResult,
 } from "./ocpp-messages.js";
-export { ocppDirection, ocppMessages } from "./schema.js";
+export * from "./schema.js";
 export type { MappedOcppMessage, OcppDirection } from "./map-callback.js";

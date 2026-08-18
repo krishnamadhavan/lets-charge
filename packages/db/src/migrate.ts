@@ -1,10 +1,9 @@
+import { readdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type postgres from "postgres";
 
 const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "../migrations");
-
-const files = ["0001_ocpp_messages.sql"];
 
 export async function migrate(sql: postgres.Sql): Promise<void> {
   await sql`
@@ -13,6 +12,10 @@ export async function migrate(sql: postgres.Sql): Promise<void> {
       applied_at timestamptz NOT NULL DEFAULT now()
     )
   `;
+
+  const files = (await readdir(migrationsDir))
+    .filter((name) => /^\d{4}_.+\.sql$/.test(name))
+    .sort();
 
   for (const file of files) {
     const id = file.replace(/\.sql$/, "");
