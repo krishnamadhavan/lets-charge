@@ -37,6 +37,11 @@ services:
       HOST: 0.0.0.0
       PORT: 3001
       DATABASE_URL: postgres://letscharge:letscharge@db:5432/letscharge
+      CITRINE_WEBHOOK_SECRET: ${CITRINE_WEBHOOK_SECRET:-dev-citrine-webhook}
+      CITRINE_TENANT_ID: "1"
+      CITRINE_SUBSCRIPTION_PATH: /data/ocpprouter/subscription
+      CITRINE_OCPP_STATION_ID: cp001
+      CITRINE_WEBHOOK_URL: http://letscharge-api:3001/internal/citrine/ocpp
     depends_on:
       db:
         condition: service_healthy

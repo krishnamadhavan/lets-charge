@@ -153,7 +153,7 @@ Until a **real box** has completed a session against our URL, UI work is decorat
 | `scripts/lab-ocpp16-charger.mjs` | Lab OCPP 1.6 charger (not product) |
 | `scripts/lab-ocpp-sink.mjs` | Lab subscription sink |
 | Agent rules | Home `~/.grok/rules/` (all projects): conventional commits, no commits to `main`, delete branch after merge, clickable links |
-| Application / product code | **None** |
+| Application / product code | Raw OCPP ingest (`ocpp_messages` + webhook). No projector / UI. |
 | Sibling | `~/Documents/xAI/citrineos-core` @ `v2.0.0-beta3` (`61622a0`) |
 
 `lets-charge` already has `origin` (`github.com/krishnamadhavan/lets-charge`). `main` is protected. Do not commit the README/handoff/design to `main`; use `docs/…` or `chore/…` if the user wants it committed.
@@ -171,7 +171,7 @@ Until a **real box** has completed a session against our URL, UI work is decorat
    - Replay EVerest on an **amd64 Linux** host later. Do not keep fighting qemu on this laptop.
    - **PR 1:** scaffold the pnpm workspace (`chore(repo): scaffold pnpm workspace and compose overlay`).
    - Fold week-1 facts into `docs/v1-design.md` (Authorization has **no** Data API on `v2.0.0-beta3`; Hasura/`Authorizations` is the lab path).
-5. If they say “just continue” with no pick, prefer **fold week-1 facts**, then **PR 3** (raw OCPP ingest) once the workspace PR is on `main`. Do not open Xcode/Android Studio. Do not start operator/resident UI. Do not treat the lab charger session as the real-SKU merge gate.
+5. If they say “just continue” with no pick, **PR 4** is next (society / slot / charger / resident schema). Do not open Xcode/Android Studio. Do not start operator/resident UI. Do not treat the lab charger session as the real-SKU merge gate.
 
 ---
 
@@ -184,7 +184,7 @@ Resolved 2026-08-16 (user, recommended defaults — see [`v1-design.md`](v1-desi
 - **Hosting:** we operate CitrineOS + our layer for the first society.
 - **Repo layout:** compose dependency + sibling `citrineos-core` clone. Not a submodule.
 
-Week-1 facts (see [`bringup-citrineos.md`](bringup-citrineos.md)): Message paths pinned; callback matches `webhook.dispatcher.ts`; 1.6 WS is `:8081` + `ocpp1.6`; station id `cp001`; **no Authorization Data API** on this tag. EVerest image is local; **manager exits on this arm64 Mac** (`pipe2() failed`). Lab charger is the working 1.6 stand-in.
+Week-1 facts (see [`bringup-citrineos.md`](bringup-citrineos.md)): Message paths pinned; callback matches `webhook.dispatcher.ts`; 1.6 WS is `:8081` + `ocpp1.6`; station id `cp001`; **no Authorization Data API** on this tag. EVerest runs via the arm64 overlay. Raw ingest writes `ocpp_messages` for `cp001`.
 
 ---
 
