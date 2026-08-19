@@ -195,3 +195,4 @@ Stack for our layer (TypeScript / Fastify / Postgres / Drizzle / React+Vite) is 
 - Hardware profiles: Schneider EVlink Pro AC and Exicom Spin Air (plug-in fields still null). Same projector; dialect lives in the two YAML files.
 - Lab start/stop adapter: `POST /internal/lab/sessions/start` queues CitrineOS RemoteStart (201 = queued). Authorization via Hasura (`ADMIN`, `RFIDTEST01`, resident tags).
 - Auth stub: resident OTP (`000000` when `OTP_STUB=true`), admin password from env, cookies `lc_resident` / `lc_admin`. No driver/operator UI.
+- Our API OpenAPI 3.0: [http://localhost:3001/docs](http://localhost:3001/docs) (JSON [http://localhost:3001/docs/json](http://localhost:3001/docs/json)). CitrineOS remains [http://localhost:8080/docs](http://localhost:8080/docs).

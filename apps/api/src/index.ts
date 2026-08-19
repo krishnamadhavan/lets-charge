@@ -5,7 +5,9 @@ import { createDb, failTimedOutPendingStarts, migrate } from "@letscharge/db";
 import { registerAuthRoutes } from "./auth.js";
 import { loadEnv } from "./env.js";
 import { registerLabRoutes } from "./lab.js";
+import { registerOpenApi } from "./openapi.js";
 import { seedHardwareProfiles } from "./profiles.js";
+import { healthBody } from "./schemas.js";
 import { subscribeEverestStationInBackground } from "./subscribe.js";
 import { registerOcppWebhook } from "./webhook.js";
 
@@ -30,9 +32,18 @@ app.addHook("onClose", async () => {
 });
 
 await app.register(cookie, { secret: env.sessionSecret });
+await registerOpenApi(app);
 
-app.get("/health", async () => ({ status: "ok", service: "letscharge-api" }));
-app.get("/v1/health", async () => ({ status: "ok", service: "letscharge-api" }));
+app.get(
+  "/health",
+  { schema: { tags: ["health"], response: { 200: healthBody } } },
+  async () => ({ status: "ok", service: "letscharge-api" }),
+);
+app.get(
+  "/v1/health",
+  { schema: { tags: ["health"], response: { 200: healthBody } } },
+  async () => ({ status: "ok", service: "letscharge-api" }),
+);
 
 registerAuthRoutes(app, {
   db,

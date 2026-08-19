@@ -6,6 +6,7 @@ import {
   projectOcppMessage,
   type LetsChargeDb,
 } from "@letscharge/db";
+import { errorBody, secretQuery } from "./schemas.js";
 
 function secretsEqual(provided: string, expected: string): boolean {
   const a = Buffer.from(provided);
@@ -22,6 +23,26 @@ export function registerOcppWebhook(
 ): void {
   app.post<{ Querystring: { secret?: string } }>(
     "/internal/citrine/ocpp",
+    {
+      schema: {
+        tags: ["internal"],
+        security: [{ querySecret: [] }],
+        querystring: secretQuery,
+        body: { type: "object", additionalProperties: true },
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              ok: { type: "boolean" },
+              duplicate: { type: "boolean" },
+            },
+          },
+          400: errorBody,
+          401: errorBody,
+          503: errorBody,
+        },
+      },
+    },
     async (request, reply) => {
       const secret = request.query.secret;
       if (typeof secret !== "string" || !secretsEqual(secret, opts.webhookSecret)) {

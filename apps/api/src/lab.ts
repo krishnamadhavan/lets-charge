@@ -9,6 +9,7 @@ import {
 } from "@letscharge/citrine-client";
 import { callbackUrlWithSecret, type ApiEnv } from "./env.js";
 import { requireInternalSecret } from "./internal-auth.js";
+import { errorBody, idParams, secretQuery } from "./schemas.js";
 import { startSession, stopOpenSessionOnCharger, stopSession } from "./sessions.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -30,7 +31,34 @@ export function registerLabRoutes(
     remoteStopPath: opts.citrine.remoteStopPath,
   };
 
-  app.post<{ Querystring: { secret?: string } }>("/internal/lab/sessions/start", async (request, reply) => {
+  app.post<{ Querystring: { secret?: string } }>(
+    "/internal/lab/sessions/start",
+    {
+      schema: {
+        tags: ["internal"],
+        security: [{ querySecret: [] }],
+        querystring: secretQuery,
+        body: {
+          type: "object",
+          required: ["id_tag"],
+          properties: {
+            id_tag: { type: "string" },
+            charger_id: { type: "string" },
+            short_code: { type: "string" },
+            connector_ocpp_id: { type: "integer" },
+          },
+        },
+        response: {
+          201: { type: "object", properties: { id: { type: "string" } } },
+          400: errorBody,
+          401: errorBody,
+          404: errorBody,
+          409: errorBody,
+          502: errorBody,
+        },
+      },
+    },
+    async (request, reply) => {
     if (!requireInternalSecret(request, reply, opts.webhookSecret)) {
       return;
     }
@@ -49,10 +77,26 @@ export function registerLabRoutes(
       return reply.code(result.status).send({ error: result.error });
     }
     return reply.code(201).send({ id: result.id });
-  });
+    },
+  );
 
   app.post<{ Querystring: { secret?: string }; Params: { id: string } }>(
     "/internal/lab/sessions/:id/stop",
+    {
+      schema: {
+        tags: ["internal"],
+        security: [{ querySecret: [] }],
+        querystring: secretQuery,
+        params: idParams,
+        response: {
+          200: { type: "object", properties: { id: { type: "string" } } },
+          401: errorBody,
+          404: errorBody,
+          409: errorBody,
+          502: errorBody,
+        },
+      },
+    },
     async (request, reply) => {
       if (!requireInternalSecret(request, reply, opts.webhookSecret)) {
         return;
@@ -67,6 +111,21 @@ export function registerLabRoutes(
 
   app.post<{ Querystring: { secret?: string }; Params: { id: string } }>(
     "/internal/lab/chargers/:id/stop",
+    {
+      schema: {
+        tags: ["internal"],
+        security: [{ querySecret: [] }],
+        querystring: secretQuery,
+        params: idParams,
+        response: {
+          200: { type: "object", properties: { id: { type: "string" } } },
+          401: errorBody,
+          404: errorBody,
+          409: errorBody,
+          502: errorBody,
+        },
+      },
+    },
     async (request, reply) => {
       if (!requireInternalSecret(request, reply, opts.webhookSecret)) {
         return;
@@ -81,6 +140,15 @@ export function registerLabRoutes(
 
   app.post<{ Querystring: { secret?: string }; Params: { id: string } }>(
     "/internal/lab/chargers/:id/commission",
+    {
+      schema: {
+        tags: ["internal"],
+        security: [{ querySecret: [] }],
+        querystring: secretQuery,
+        params: idParams,
+        response: { 200: { type: "object", additionalProperties: true }, 401: errorBody, 404: errorBody },
+      },
+    },
     async (request, reply) => {
       if (!requireInternalSecret(request, reply, opts.webhookSecret)) {
         return;
@@ -100,6 +168,20 @@ export function registerLabRoutes(
 
   app.post<{ Querystring: { secret?: string } }>(
     "/internal/lab/authorizations/seed",
+    {
+      schema: {
+        tags: ["internal"],
+        security: [{ querySecret: [] }],
+        querystring: secretQuery,
+        response: {
+          200: {
+            type: "object",
+            properties: { seeded: { type: "array", items: { type: "string" } } },
+          },
+          401: errorBody,
+        },
+      },
+    },
     async (request, reply) => {
       if (!requireInternalSecret(request, reply, opts.webhookSecret)) {
         return;

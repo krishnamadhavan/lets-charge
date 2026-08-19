@@ -9,6 +9,7 @@ describe("otp stub", () => {
     expect(otpAccepts("+919800000001", "000001", true)).toBe(true);
     expect(otpAccepts("+919800000001", "123456", true)).toBe(false);
     expect(otpAccepts("+919800000001", "000000", false)).toBe(false);
+    expect(otpAccepts("+919800000001", 0, true)).toBe(true);
   });
 
   it("rate-limits a phone", () => {
