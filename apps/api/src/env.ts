@@ -3,6 +3,11 @@ export type ApiEnv = {
   port: number;
   databaseUrl: string;
   webhookSecret: string;
+  sessionSecret: string;
+  otpStub: boolean;
+  nodeEnv: string;
+  adminLogin: string;
+  adminPassword: string;
   citrine:
     | {
         baseUrl: string;
@@ -36,6 +41,18 @@ export function loadEnv(env: NodeJS.ProcessEnv = process.env): ApiEnv {
     port: Number(env.PORT ?? 3001),
     databaseUrl,
     webhookSecret,
+    sessionSecret: env.SESSION_SECRET?.trim() || webhookSecret,
+    otpStub:
+      env.OTP_STUB !== undefined
+        ? env.OTP_STUB === "true"
+        : (env.NODE_ENV ?? "development") !== "production",
+    nodeEnv: env.NODE_ENV ?? "development",
+    adminLogin: env.ADMIN_LOGIN ?? "admin",
+    adminPassword:
+      env.ADMIN_PASSWORD ??
+      ((env.NODE_ENV ?? "development") === "production"
+        ? required("ADMIN_PASSWORD")
+        : "admin"),
     citrine: citrineBaseUrl
       ? {
           baseUrl: citrineBaseUrl,
