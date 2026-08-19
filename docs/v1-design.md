@@ -89,7 +89,7 @@ These are the architectural choices this contract makes. K12 (our stack) stays *
 | K12 | Our stack | TypeScript / **Node 22+** / Fastify / Postgres / Drizzle / React+Vite. **Provisional** until `pnpm citrine --everest16` works. Sibling `citrineos-core` requires **Node 24.16.0+**. | Same language as CitrineOS. Our layer may stay on 22. Running their launcher from source needs 24. Not pinned. |
 | K13 | DB isolation | Separate Postgres **instance** on host port **5433**, database `letscharge`. Not the `citrine` database and not a schema on `ocpp-db`. | Avoids colliding with CitrineOS host `5432`. Survives their migrations. We can wipe/replay our projection. |
 | K14 | Production WS | Lab: CitrineOS `:8081` (allow-unknown, no auth). First society: TLS WS (`:8443`/`:8444`) or basic-auth `:8082`, stations **pre-registered**. `:8083` is commented out in current compose (seeded mock eMSP) — do not publish it. | Their own README: `allowUnknownChargingStations` is test-only. Do not put 8081 on the internet. |
-| K15 | UI order | Engine loop on a **real box** before operator web (week 5) and resident web (week 6). PR 9 and PR 11 **merge-gated** on a real-SKU billable-shape session in bring-up notes. | Locked week plan. EVerest-only UI stays the CitrineOS lab Operator UI. |
+| K15 | UI order | Engine loop proven on **EVerest** is enough to ship operator + resident web. A real SKU still required to set `certified=true` and close buy-rules. Decided 2026-08-19: no physical box soon. | Was real-SKU merge-gated. Unlocked so v1 can be completed on the simulator. |
 | K16 | OCPP idTag | Every resident has `ocpp_id_tag` (unique, ≤20, printable ASCII). Admin uses `ADMIN`. One lab RFID tag `RFIDTEST01`. All three are upserted into CitrineOS Authorization via Data API. | OCPP 1.6 `idTag` is `CiString20Type`. `RES-{uuid}` will fail validation. AuthorizeRemoteTxRequests needs a CitrineOS Authorization row. |
 | K17 | Host ports (lab) | CitrineOS keeps 3000 / 5432 / 8080–8082 / 8443–8444 / 8090. **Our API = 3001**, **our web = 5173**, **our Postgres = 5433**. Vite proxies `/v1` and `/c` to the API (same-origin cookies). | Two composes on one VM otherwise collide. Society-Wi-Fi demo is HTTP; `Secure` cookies only when HTTPS / production. |
 | K18 | SKU CSMS URL this month | **Planning assumption** (decided 2026-08-16): Schneider documented/likely; Exicom unproven until a unit is on the bench. Does **not** certify either SKU. Do not start a vendor call now. | Buy-rules still apply on the physical unit. `certified=false` until all four hold. |
@@ -957,10 +957,10 @@ Order is the product plan. Do not invert to “apps first.”
 | 1 | CitrineOS + EVerest 1.6. Boot → heartbeat → remote start → meters → stop. | Sibling clone, compose overlay, bring-up notes (EVerest `ocppConnectionName`, OpenAPI paths including Authorization). Subscription webhook for **that** station id only. |
 | 2–3 | Same loop on **Schneider**. One-page hardware profile. | Identity `(vendor, model, serial)`, Schneider YAML, projector, RemoteStart adapter + Authorization upsert. **Critical path:** physical box (planning: Schneider CSMS URL likely; not certified until buy-rules). |
 | 4 | Same loop on **Exicom**. The **diff** is the compatibility layer. | Exicom YAML. **Not** on the UI merge path. |
-| 5 | Operator web: online/offline, start/stop, session list. | Merge-gated on a real-SKU billable-shape session in bring-up notes. |
-| 6 | Resident mobile-web: identify charger → start → live kWh → stop. | Same real-SKU gate. OTP stub, lookup, driver start/stop, poll, receipt. |
+| 5 | Operator web: online/offline, start/stop, session list. | Against EVerest until a real SKU arrives. |
+| 6 | Resident mobile-web: identify charger → start → live kWh → stop. | Same. OTP stub, lookup, driver start/stop, poll, receipt. |
 
-**Until a real box has completed a session against our URL, UI work is decoration.** PRs before that are engine bring-up, message store, data model, hardware profiles — not React Native / Xcode. Reviewers reject PR 9 / PR 11 if `docs/bringup-citrineos.md` does not record a real-SKU (not EVerest-only) start+stop+kWh in *our* store.
+**v1 UI ships against EVerest** (decided 2026-08-19). A later real-SKU session still certifies Schneider/Exicom; it does not block operator or resident web.
 
 ---
 
@@ -1305,9 +1305,9 @@ Incremental, independently reviewable, mergeable into `main` via PR (never commi
 ### PR 9 — `feat(web): add society operator charger and session screens`
 
 - **Week:** 5
-- **Depends on:** PR 6, PR 8, **and** `docs/bringup-citrineos.md` recording **one billable-shape session from a real SKU** (not EVerest-only)
+- **Depends on:** PR 6, PR 8. EVerest is an acceptable stand-in (K15, 2026-08-19).
 - **Affects:** `apps/web` `/admin/*`, admin API routes
-- **Change:** Charger list (online/offline, heartbeat, status, error), start/stop (single open session / 409), session list, recover-stop. Not CitrineOS Operator UI. Reviewers **reject** this PR if the real-box gate is missing. EVerest-only debugging stays on CitrineOS Operator UI.
+- **Change:** Charger list (online/offline, heartbeat, status, error), start/stop (single open session / 409), session list, recover-stop. Not CitrineOS Operator UI.
 
 ### PR 10 — `feat(api): add resident driver start stop and receipt API`
 
@@ -1319,9 +1319,9 @@ Incremental, independently reviewable, mergeable into `main` via PR (never commi
 ### PR 11 — `feat(web): add resident mobile-web charge flow`
 
 - **Week:** 6
-- **Depends on:** PR 10, **same real-SKU gate as PR 9**
+- **Depends on:** PR 10. EVerest is an acceptable stand-in (K15, 2026-08-19).
 - **Affects:** `apps/web` four screens + `/c/:code`
-- **Change:** Sign in, charger in front of me (QR/short code), start/stop + 3s live kWh poll, receipt. Mobile-first. No native projects. Reviewers reject if the real-box gate is missing.
+- **Change:** Sign in, charger in front of me (QR/short code), start/stop + 3s live kWh poll, receipt. Mobile-first. No native projects.
 
 ### Intentionally later (not v1 PRs)
 

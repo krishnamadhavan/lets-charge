@@ -1,22 +1,13 @@
 import { timingSafeEqual } from "node:crypto";
 import { eq } from "drizzle-orm";
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { residents, societies, wallets, type LetsChargeDb } from "@letscharge/db";
-import { adminCookie, residentCookie, sessionCookieOptions } from "./cookies.js";
+import { adminCookie, readSignedCookie, residentCookie, sessionCookieOptions } from "./cookies.js";
 import { createOtpLimiter, normalizeOtp, otpAccepts } from "./otp.js";
 import { errorBody, okBody } from "./schemas.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function readSigned(request: FastifyRequest, name: string): string | undefined {
-  const raw = request.cookies[name];
-  if (!raw) {
-    return undefined;
-  }
-  const parsed = request.unsignCookie(raw);
-  return parsed.valid ? parsed.value : undefined;
 }
 
 export function registerAuthRoutes(
@@ -145,7 +136,7 @@ export function registerAuthRoutes(
       },
     },
     async (request, reply) => {
-    const residentId = readSigned(request, residentCookie);
+    const residentId = readSignedCookie(request, residentCookie);
     if (!residentId) {
       return reply.code(401).send({ error: "unauthorized" });
     }

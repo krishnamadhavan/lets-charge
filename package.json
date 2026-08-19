@@ -13,7 +13,7 @@
     "dev:api": "pnpm --filter @letscharge/api dev",
     "dev:web": "pnpm --filter @letscharge/web dev",
     "up": "docker compose -f deploy/compose.yml up -d --build",
-    "up:citrine": "docker compose -f deploy/compose.yml -f deploy/compose.citrine.yml up -d --build",
+    "up:citrine": "docker compose -f deploy/compose.yml -f deploy/compose.citrine.yml --profile demo up -d --build",
     "up:demo": "docker compose -f deploy/compose.yml --profile demo up -d --build",
     "down": "docker compose -f deploy/compose.yml --profile demo down",
     "test": "pnpm --recursive --if-present test",
