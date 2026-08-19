@@ -6,6 +6,8 @@
 #
 # Host ports: API 3001, demo web 5173, Postgres 5433.
 # Do not bind 3000, 5432, 8080–8082, 8090, 8443, 8444.
+# Lab default: API calls CitrineOS on the host. Use `pnpm up:citrine`
+# so CitrineOS can webhook back (joins the `citrineos` network).
 name: letscharge
 
 services:
@@ -42,6 +44,8 @@ services:
       OTP_STUB: "true"
       ADMIN_LOGIN: admin
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      CITRINE_BASE_URL: ${CITRINE_BASE_URL:-http://host.docker.internal:8080}
+      CITRINE_HASURA_URL: ${CITRINE_HASURA_URL:-http://host.docker.internal:8090/v1/graphql}
       CITRINE_TENANT_ID: "1"
       CITRINE_SUBSCRIPTION_PATH: /data/ocpprouter/subscription
       CITRINE_REMOTE_START_PATH: /ocpp/1.6/evdriver/remoteStartTransaction
@@ -49,6 +53,8 @@ services:
       CITRINE_STATION_COMMISSION_PATH: /data/configuration/boot
       CITRINE_OCPP_STATION_ID: cp001
       CITRINE_WEBHOOK_URL: http://letscharge-api:3001/internal/citrine/ocpp
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy
