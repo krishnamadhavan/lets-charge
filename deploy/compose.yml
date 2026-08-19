@@ -38,6 +38,10 @@ services:
       PORT: 3001
       DATABASE_URL: postgres://letscharge:letscharge@db:5432/letscharge
       CITRINE_WEBHOOK_SECRET: ${CITRINE_WEBHOOK_SECRET:-dev-citrine-webhook}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret}
+      OTP_STUB: "true"
+      ADMIN_LOGIN: admin
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
       CITRINE_TENANT_ID: "1"
       CITRINE_SUBSCRIPTION_PATH: /data/ocpprouter/subscription
       CITRINE_REMOTE_START_PATH: /ocpp/1.6/evdriver/remoteStartTransaction
