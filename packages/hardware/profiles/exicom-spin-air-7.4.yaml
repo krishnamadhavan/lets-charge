@@ -1,0 +1,26 @@
+id: exicom-spin-air-7.4
+vendor: Exicom
+model: Spin Air
+rated_kw: 7.4
+phases: 1
+connector_type: IEC_62196_T2
+ocpp: "1.6J"
+known_firmware: []
+connectors:
+  - ocpp_connector_id: 1
+    label: "Type 2"
+plug_in:
+  status_notification_on_plugin: null
+  start_transaction_requires_authorize: null
+meters:
+  energy_measurand: Energy.Active.Import.Register
+  energy_unit: Wh
+  clock_aligned_interval_sec: null
+  sample_interval_sec: null
+dialect_notes:
+  - Datasheet lists 3rd-party CMS and OCPP 1.6J. CSMS URL unproven until a unit is on the bench.
+buy_rules:
+  custom_csms_url: unknown
+  ocpp_16_json: documented
+  firmware_pinned: false
+  remote_start_stop_and_rfid_on_our_url: false
