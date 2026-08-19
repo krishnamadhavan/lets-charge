@@ -193,4 +193,5 @@ Stack for our layer (TypeScript / Fastify / Postgres / Drizzle / React+Vite) is 
 - Raw OCPP ingest: `POST /internal/citrine/ocpp?secret=` writes `ocpp_messages`. `pnpm up:citrine` subscribes EVerest `cp001` only.
 - Product schema + lab seed: one society, three slots, EVerest charger `cp001` (`LC-B12`), two residents with ₹1,000 test credit.
 - Hardware profiles: Schneider EVlink Pro AC and Exicom Spin Air (plug-in fields still null). Same projector; dialect lives in the two YAML files.
-- Lab start/stop adapter: `POST /internal/lab/sessions/start` queues CitrineOS RemoteStart (201 = queued). Authorization via Hasura (`ADMIN`, `RFIDTEST01`, resident tags). No driver/operator UI.
+- Lab start/stop adapter: `POST /internal/lab/sessions/start` queues CitrineOS RemoteStart (201 = queued). Authorization via Hasura (`ADMIN`, `RFIDTEST01`, resident tags).
+- Auth stub: resident OTP (`000000` when `OTP_STUB=true`), admin password from env, cookies `lc_resident` / `lc_admin`. No driver/operator UI.
