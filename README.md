@@ -139,7 +139,7 @@ Do not open Xcode or Android Studio first. Do not design twelve screens.
 | 5 | Operator web: online/offline, start/stop, session list. |
 | 6 | Resident mobile-web: identify charger → start → live kWh → stop. |
 
-A second physical model (week 4) is the real “are we vendor-compatible?” test. Until a real box has completed a session against our URL, UI work is decoration.
+A second physical model (week 4) is the real “are we vendor-compatible?” test. v1 apps ship against EVerest until a real box is on the bench.
 
 ## Architecture we are committing to
 
@@ -194,5 +194,6 @@ Stack for our layer (TypeScript / Fastify / Postgres / Drizzle / React+Vite) is 
 - Product schema + lab seed: one society, three slots, EVerest charger `cp001` (`LC-B12`), two residents with ₹1,000 test credit.
 - Hardware profiles: Schneider EVlink Pro AC and Exicom Spin Air (plug-in fields still null). Same projector; dialect lives in the two YAML files.
 - Lab start/stop adapter: `POST /internal/lab/sessions/start` queues CitrineOS RemoteStart (201 = queued). Authorization via Hasura (`ADMIN`, `RFIDTEST01`, resident tags).
-- Auth stub: resident OTP (`000000` when `OTP_STUB=true`), admin password from env, cookies `lc_resident` / `lc_admin`. No driver/operator UI.
+- Auth stub: resident OTP (`000000` when `OTP_STUB=true`), admin password from env, cookies `lc_resident` / `lc_admin`.
+- Operator web: [http://localhost:5173/admin](http://localhost:5173/admin). Resident: [http://localhost:5173/](http://localhost:5173/) and `/c/LC-B12`. v1 UI runs against **EVerest**.
 - Our API OpenAPI 3.0: [http://localhost:3001/docs](http://localhost:3001/docs) (JSON [http://localhost:3001/docs/json](http://localhost:3001/docs/json)). CitrineOS remains [http://localhost:8080/docs](http://localhost:8080/docs).

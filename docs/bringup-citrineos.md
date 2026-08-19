@@ -11,7 +11,8 @@ This file is **facts** from a live lab. It does not change product locks in [`v1
 
 CitrineOS `Transactions` row `id=2`: `ocppConnectionName=cp001`, `transactionId="2"`, `meterStart=0`, `totalKwh=0.066`, `isActive=false`, start and end both set.
 
-This is **not** a real-SKU session. PR 9 / PR 11 stay gated.
+This is **not** a real-SKU session and does **not** certify Schneider/Exicom.  
+Decided 2026-08-19: operator and resident UI may ship against this EVerest loop.
 
 A lab JS charger (`scripts/lab-ocpp16-charger.mjs`) proved the same CSMS path earlier (tx `1`). EVerest is now the week-1 stand-in.
 
@@ -159,7 +160,7 @@ Table **`OCPPMessages`**. Columns: `ocppConnectionName`, `correlationId`, `origi
 ## What this does *not* close
 
 - Buy-rule #1 on Schneider / Exicom.
-- Real-SKU billable-shape session (UI merge gate).
+- Real-SKU billable-shape session (certifies the SKU; UI no longer waits on it).
 - Official `pnpm citrine --everest16` on this Mac (use the arm64 overlay).
 - HTTP auth on `:8080` if they later enable the bearer scheme.
 - Product Authorization adapter (Hasura / SendLocalList) — still SQL in the lab.
