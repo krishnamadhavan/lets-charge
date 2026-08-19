@@ -153,7 +153,7 @@ Until a **real box** has completed a session against our URL, UI work is decorat
 | `scripts/lab-ocpp16-charger.mjs` | Lab OCPP 1.6 charger (not product) |
 | `scripts/lab-ocpp-sink.mjs` | Lab subscription sink |
 | Agent rules | Home `~/.grok/rules/` (all projects): conventional commits, no commits to `main`, delete branch after merge, clickable links |
-| Application / product code | Ingest, schema, projector, CitrineOS start/stop adapter. No driver/operator UI. |
+| Application / product code | Ingest, schema, projector, two SKU profiles, CitrineOS start/stop adapter. No driver/operator UI. |
 | Sibling | `~/Documents/xAI/citrineos-core` @ `v2.0.0-beta3` (`61622a0`) |
 
 `lets-charge` already has `origin` (`github.com/krishnamadhavan/lets-charge`). `main` is protected. Do not commit the README/handoff/design to `main`; use `docs/…` or `chore/…` if the user wants it committed.
@@ -171,7 +171,7 @@ Until a **real box** has completed a session against our URL, UI work is decorat
    - Replay EVerest on an **amd64 Linux** host later. Do not keep fighting qemu on this laptop.
    - **PR 1:** scaffold the pnpm workspace (`chore(repo): scaffold pnpm workspace and compose overlay`).
    - Fold week-1 facts into `docs/v1-design.md` (Authorization has **no** Data API on `v2.0.0-beta3`; Hasura/`Authorizations` is the lab path).
-5. If they say “just continue” with no pick, **PR 7** is next (Exicom profile as a dialect diff) or **PR 8** (admin/OTP auth). Do not open Xcode/Android Studio. Do not start operator/resident UI. Do not treat the lab charger session as the real-SKU merge gate.
+5. If they say “just continue” with no pick, **PR 8** is next (admin login + resident OTP stub). Do not open Xcode/Android Studio. Do not start operator/resident UI. Do not treat the lab charger session as the real-SKU merge gate.
 
 ---
 
