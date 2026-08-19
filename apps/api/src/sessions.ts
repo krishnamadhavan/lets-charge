@@ -245,3 +245,22 @@ export async function stopOpenSessionOnCharger(
   }
   return stopSession(db, citrine, open[0]!.id);
 }
+
+export async function recoverStop(
+  db: LetsChargeDb,
+  sessionId: string,
+): Promise<{ id: string } | SessionCommandError> {
+  const [row] = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
+  if (!row) {
+    return { status: 404, error: "not_found" };
+  }
+  const next = applySessionEvent(snapFromRow(row), {
+    type: "recover",
+    at: new Date().toISOString(),
+  });
+  if (next.status !== "recovered") {
+    return { status: 409, error: "session_not_stoppable" };
+  }
+  await persistSession(db, row, next);
+  return { id: row.id };
+}

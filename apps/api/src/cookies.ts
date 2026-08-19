@@ -7,6 +7,15 @@ export function cookieSecure(request: FastifyRequest, nodeEnv: string): boolean 
   return request.headers["x-forwarded-proto"] === "https" || nodeEnv === "production";
 }
 
+export function readSignedCookie(request: FastifyRequest, name: string): string | undefined {
+  const raw = request.cookies[name];
+  if (!raw) {
+    return undefined;
+  }
+  const parsed = request.unsignCookie(raw);
+  return parsed.valid ? parsed.value : undefined;
+}
+
 export function sessionCookieOptions(request: FastifyRequest, nodeEnv: string) {
   return {
     path: "/",

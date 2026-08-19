@@ -14,6 +14,8 @@ export async function registerOpenApi(app: FastifyInstance): Promise<void> {
       tags: [
         { name: "health", description: "Liveness" },
         { name: "auth", description: "Resident OTP stub and admin login" },
+        { name: "admin", description: "Society operator CMS" },
+        { name: "driver", description: "Resident charge flow" },
         { name: "internal", description: "CitrineOS webhook and lab commands" },
       ],
       components: {

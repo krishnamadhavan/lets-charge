@@ -2,7 +2,9 @@ import cookie from "@fastify/cookie";
 import Fastify from "fastify";
 import postgres from "postgres";
 import { createDb, failTimedOutPendingStarts, migrate } from "@letscharge/db";
+import { registerAdminRoutes } from "./admin.js";
 import { registerAuthRoutes } from "./auth.js";
+import { registerDriverRoutes } from "./driver.js";
 import { loadEnv } from "./env.js";
 import { registerLabRoutes } from "./lab.js";
 import { registerOpenApi } from "./openapi.js";
@@ -52,6 +54,16 @@ registerAuthRoutes(app, {
   adminLogin: env.adminLogin,
   adminPassword: env.adminPassword,
 });
+const citrineMessages = env.citrine
+  ? {
+      baseUrl: env.citrine.baseUrl,
+      tenantId: env.citrine.tenantId,
+      remoteStartPath: env.citrine.remoteStartPath,
+      remoteStopPath: env.citrine.remoteStopPath,
+    }
+  : undefined;
+registerAdminRoutes(app, { db, citrine: citrineMessages });
+registerDriverRoutes(app, { db, citrine: citrineMessages });
 registerOcppWebhook(app, { db, webhookSecret: env.webhookSecret });
 if (env.citrine) {
   registerLabRoutes(app, { db, webhookSecret: env.webhookSecret, citrine: env.citrine });
