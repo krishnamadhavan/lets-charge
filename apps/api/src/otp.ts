@@ -4,11 +4,23 @@ export function stubOtpForPhone(phone: string): string[] {
   return ["000000", lastSix];
 }
 
-export function otpAccepts(phone: string, code: string, stub: boolean): boolean {
+/** Swagger/JSON often send 000000 as the number 0. */
+export function normalizeOtp(code: unknown): string {
+  if (typeof code === "string") {
+    return code.trim();
+  }
+  if (typeof code === "number" && Number.isFinite(code)) {
+    return String(Math.trunc(Math.abs(code))).padStart(6, "0");
+  }
+  return "";
+}
+
+export function otpAccepts(phone: string, code: unknown, stub: boolean): boolean {
   if (!stub) {
     return false;
   }
-  return stubOtpForPhone(phone).includes(code);
+  const normalized = normalizeOtp(code);
+  return normalized.length > 0 && stubOtpForPhone(phone).includes(normalized);
 }
 
 export function createOtpLimiter(windowMs = 60_000, max = 5) {
