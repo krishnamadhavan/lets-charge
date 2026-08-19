@@ -186,11 +186,12 @@ async function touchCharger(
     lastSeenAt: input.receivedAt,
   };
 
-  if (input.eventName === "connected") {
-    patch.wsConnected = true;
-  }
   if (input.eventName === "closed") {
     patch.wsConnected = false;
+  } else {
+    // Heartbeat/Boot/etc. mean the WS is up. `connected` can be missed after
+    // our API restarts; CitrineOS will not send it again until the box reconnects.
+    patch.wsConnected = true;
   }
   if (input.action === "StatusNotification") {
     if (typeof input.payload.status === "string") {
